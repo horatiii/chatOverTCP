@@ -6,16 +6,37 @@
 #include<errno.h>
 #include <iostream>
 #include <vector>
+#include <thread>
 
+int hostSocketDescriptor , incomingSocketDescriptor , c;
+struct sockaddr_in server , client;
+char *message;
+
+void collectClients()
+{
+	while (true)
+	{
+		if( incomingSocketDescriptor = accept(hostSocketDescriptor, (struct sockaddr *)&client, (socklen_t*)&c)) 
+		{
+			puts("connection accepted");
+			message = "Hello World\r\n";
+
+			write(incomingSocketDescriptor , message , strlen(message));
+		}
+
+		if(incomingSocketDescriptor<0)
+		{
+			perror("connection refused");
+			/*return -1;*/
+		}
+	}
+}
 
 
 int main(int argc , char *argv[])
 {
-	int hostSocketDescriptor , incomingSocketDescriptor , c;
-	struct sockaddr_in server , client;
-	char *message;
 
-	
+
 
 	/*Create socket*/
 	hostSocketDescriptor = socket(AF_INET , SOCK_STREAM , 0);
@@ -25,9 +46,9 @@ int main(int argc , char *argv[])
 		return -1;
 	}
 
-	server.sin_family = AF_INET;
-	/*server.sin_addr.s_addr = INADDR_ANY;*/
-	server.sin_addr.s_addr = inet_addr("127.0.0.1");
+	server.sin_family = AF_INET; /*ipv4 address type*/
+	server.sin_addr.s_addr = INADDR_ANY;
+	//server.sin_addr.s_addr = inet_addr("127.0.0.1");
 	server.sin_port = htons( atoi(argv[1]) );
 
 	/*Bind*/
@@ -46,19 +67,22 @@ int main(int argc , char *argv[])
 	puts("Waiting for incoming connections...");
 	c = sizeof(struct sockaddr_in);
 
-	while( (incomingSocketDescriptor = accept(hostSocketDescriptor, (struct sockaddr *)&client, (socklen_t*)&c)) )
-	{
-		puts("connection accepted");
-		message = "Hello World\r\n";
+	std::thread t1(collectClients);
+	t1.join();
 
-		write(incomingSocketDescriptor , message , strlen(message));
-	}
+	//while( (incomingSocketDescriptor = accept(hostSocketDescriptor, (struct sockaddr *)&client, (socklen_t*)&c)) )
+	//{
+		//puts("connection accepted");
+		//message = "Hello World\r\n";
 
-	if (incomingSocketDescriptor<0)
-	{
-		perror("connection refused");
-		/*return -1;*/
-	}
+		//write(incomingSocketDescriptor , message , strlen(message));
+	//}
+
+	//if (incomingSocketDescriptor<0)
+	//{
+		//perror("connection refused");
+		//[>return -1;<]
+	//}
 
 	return 0;
 }
