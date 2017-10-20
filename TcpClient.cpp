@@ -8,7 +8,7 @@ class Tcp
 {
 	public: 
 		int descriptor;
-		bool setup(const char* addr, unsigned short port);
+		bool setup(const char* addr, uint16_t port);
 		bool connection();
 		bool send(char* data);
 		char* receive();
@@ -22,7 +22,7 @@ class Tcp
 
 };
 
-bool Tcp::setup(const char *addr, unsigned short port)
+bool Tcp::setup(const char *addr, uint16_t port)
 {
 
 	server.sin_addr.s_addr = inet_addr(addr);

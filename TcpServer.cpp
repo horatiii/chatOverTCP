@@ -10,7 +10,7 @@ class TcpServer
 	public: 
 		int descriptor, incomingConnection;
 
-		bool setup(unsigned short port);
+		bool setup(uint16_t port);
 		bool start();
 		bool acceptConnection();
 		bool send(char* data);
@@ -25,7 +25,7 @@ class TcpServer
 
 };
 
-bool TcpServer::setup(unsigned short port)
+bool TcpServer::setup(uint16_t port)
 {
 	descriptor = socket(AF_INET , SOCK_STREAM , 0); 
 
