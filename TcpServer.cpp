@@ -29,9 +29,10 @@ bool TcpServer::setup(unsigned short port)
 {
 	descriptor = socket(AF_INET , SOCK_STREAM , 0); 
 
-	if (descriptor == -1)
+	if (descriptor < 0)
 	{
-		printf("an error: %s\n", strerror(errno));
+		//perror("setup");
+		std::cerr<<"setup failed";
 		return false;
 	}
 
@@ -47,17 +48,23 @@ bool TcpServer::setup(unsigned short port)
 
 char* TcpServer::receive()
 {
-	memset(toReceive, 0, sizeof(toReceive));
+	char aux[1024];
+	memset(aux, 0, sizeof(aux));
 
-	//unsigned short size=read(descriptor,toReceive,1024);
 	read(descriptor,toReceive,1024);
-	return toReceive;
+	return aux;
 }
 
 bool TcpServer::send(char* data)
 {
-	write(incomingConnection , "9001" , strlen("9001"));
-	return true;
+	if( write(incomingConnection , data , strlen(data))>=0)
+		return true;
+
+	else
+	{
+		std::cerr<<"sending failed";
+		return false;
+	}
 }
 
 bool TcpServer::start()
@@ -65,16 +72,19 @@ bool TcpServer::start()
 
 	if( bind(descriptor,(struct sockaddr *)&server , sizeof(server)) < 0)
 	{
-		perror("bind");
+		//perror("bind");
+		std::cout<<"bind failed";
+		std::cerr<<"bind failed";
 		return false;
 	}
 	
 	else
 	{
-		puts("bind ok");
+		//puts("bind ok");
+		
 
 	listen(descriptor , 3);
-	puts("listen ok");
+	//puts("listen ok");
 
 
 	return true;
@@ -93,7 +103,8 @@ bool TcpServer::acceptConnection()
 
 	else
 	{
-		perror("connection refused");
+		//perror("connection refused");
+		std::cerr<<"connection failed";
 		return false;
 	}
 }

@@ -28,8 +28,14 @@ bool Tcp::setup(const char *addr, unsigned short port)
 	server.sin_addr.s_addr = inet_addr(addr);
 	server.sin_family = AF_INET;
 	server.sin_port = htons( port );
+
 	descriptor = socket(AF_INET , SOCK_STREAM , 0);
-	return true;
+
+	if(descriptor<0)
+	{
+		return false;
+	}
+	else return true;
 }
 
 bool Tcp::connection()
@@ -38,13 +44,15 @@ bool Tcp::connection()
 	if (connect(descriptor , (struct sockaddr *)&server , sizeof(server)) < 0)
 
 	{
-		perror("connection failure");
+		//perror("connection failure");
+		std::cerr<<"s";
 		return false;
 	}
 
 	else
 	{
-		puts("connected to server");
+		//puts("connected to server");
+		
 		return true;
 	}
 }
@@ -53,7 +61,6 @@ char* Tcp::receive()
 {
   memset(toReceive, 0, sizeof(toReceive)); 
 	read(descriptor,toReceive,1024);
-	//unsigned short size=read(descriptor,toReceive,1024);
 	return toReceive;
 }
 

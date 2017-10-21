@@ -1,5 +1,4 @@
-#include "TcpServer.cpp"
-
+#include "TcpServer.cpp" 
 bool handleClient(unsigned short port)
 {
 	TcpServer s;
@@ -11,7 +10,9 @@ bool handleClient(unsigned short port)
 		}
 		else
 		{
-			puts("redirection did not succeed ");	
+			//puts("redirection did not succeed ");	
+			return -1;
+			
 		}
 	
 }
@@ -20,20 +21,24 @@ int main( int argc, char** argv)
 	TcpServer s;
 	if(!s.setup(atoi(argv[1]))) return -1;
 	if(!s.start()) return -1;
+	char* designatedPort="9009";
 
 	
 	
 	while(true)
 	{
 
+		
+		//std::cout<<"before accept";
 		if(s.acceptConnection())
 		{
-			s.send("9009");
+			puts("cout");
+			s.send(designatedPort);
 			handleClient(9009);
 		}
 		else
 		{
-			puts("not ok");	
+				
 		}
 
 	}
