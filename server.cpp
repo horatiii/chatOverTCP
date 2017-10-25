@@ -1,40 +1,71 @@
 #include "TcpServer.cpp" 
-bool handleClient(unsigned short port)
+#include <thread>
+#include <vector>
+
+TcpServer primary;
+std::vector<TcpServer*> clients;
+uint16_t currentPort=9000;
+
+uint16_t getPortNumber()
+{
+	return ++currentPort;
+}
+
+void broadcastMessage()
+{
+
+}
+
+bool redirectClient()
 {
 	TcpServer s;
-	if(!s.setup(port)) return false;
-	if(!s.start()) return false;
+	uint16_t port = getPortNumber();
+
+	if(!s.setup(port)) 
+		return false;
+
+	if(!s.start()) 
+		return false; 
+
+
+		
+	else 
+	{
+
+		primary.send((std::to_string(port)).c_str());
+
+	}
+
+	
+		std::cerr<<"accepting connection"; 
 		if(s.acceptConnection())
 		{
 			s.send("redirection succeeded");
+			return true;
 		}
 		else
 		{
-			//puts("redirection did not succeed ");	
-			return -1;
+			return false;
 			
 		}
 	
 }
-int main( int argc, char** argv)
-{
-	TcpServer s;
-	if(!s.setup(atoi(argv[1]))) return -1;
-	if(!s.start()) return -1;
-	char* designatedPort="9009";
 
-	
-	
+void collectClients()
+{
 	while(true)
 	{
 
 		
-		//std::cout<<"before accept";
-		if(s.acceptConnection())
+		if(primary.acceptConnection())
 		{
-			puts("cout");
-			s.send(designatedPort);
-			handleClient(9009);
+			if(redirectClient())
+			{
+
+			}
+			else
+			{
+			}
 		}
 		else
 		{
@@ -42,4 +73,17 @@ int main( int argc, char** argv)
 		}
 
 	}
+}
+
+int main( int argc, char** argv)
+{
+	primary.setup(atoi(argv[1]));
+	primary.start();
+	std::cerr<<"started";
+
+	std::thread one(collectClients);
+	one.join();
+
+	
+	
 }

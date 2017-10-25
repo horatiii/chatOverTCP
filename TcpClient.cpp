@@ -2,9 +2,10 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <iostream>
+#include <cstdlib>
 #include <unistd.h>
 #include <string.h>
-class Tcp
+class TcpClient
 {
 	public: 
 		int descriptor;
@@ -16,55 +17,55 @@ class Tcp
 
 	private:
 		struct sockaddr_in server;
-		char toSend[1024]; 
 		char toReceive[1024];
 
 
 };
 
-bool Tcp::setup(const char *addr, uint16_t port)
+bool TcpClient::setup(const char *addr, uint16_t port)
 {
-
 	server.sin_addr.s_addr = inet_addr(addr);
 	server.sin_family = AF_INET;
 	server.sin_port = htons( port );
-
 	descriptor = socket(AF_INET , SOCK_STREAM , 0);
 
 	if(descriptor<0)
 	{
+		std::cerr <<"descriptor creation:  "<< strerror(errno) << std::endl;
 		return false;
 	}
-	else return true;
+	else 
+	{
+		return true;
+	}
+
+
 }
 
-bool Tcp::connection()
+bool TcpClient::connection()
 {
 
 	if (connect(descriptor , (struct sockaddr *)&server , sizeof(server)) < 0)
 
 	{
-		//perror("connection failure");
-		std::cerr<<"s";
+		std::cerr <<"connection:  "<< strerror(errno) << std::endl;
 		return false;
 	}
 
 	else
 	{
-		//puts("connected to server");
-		
 		return true;
 	}
 }
 
-char* Tcp::receive()
+char* TcpClient::receive()
 {
   memset(toReceive, 0, sizeof(toReceive)); 
 	read(descriptor,toReceive,1024);
 	return toReceive;
 }
 
-bool Tcp::send(char* data)
+bool TcpClient::send(char* data)
 {
 	write(descriptor , data , strlen(data));
 	return true;
