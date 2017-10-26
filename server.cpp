@@ -1,55 +1,47 @@
 #include "TcpServer.cpp" 
 #include <thread>
 #include <vector>
+#include <mutex>
 
 TcpServer primary;
-std::vector<TcpServer*> clients;
-uint16_t currentPort=9000;
+std::vector<int> clients;
+std::mutex simpleLock;
+char data[1024];
 
-uint16_t getPortNumber()
+void receiveMessages()
 {
-	return ++currentPort;
+	while(true)
+	{
+	simpleLock.lock();
+		for(int i:clients)
+		{
+      read(i,data,1024);   
+			puts(data);
+		}
+		simpleLock.unlock();
+	}
 }
+
 
 void broadcastMessage()
 {
-
-}
-
-bool redirectClient()
-{
-	TcpServer s;
-	uint16_t port = getPortNumber();
-
-	if(!s.setup(port)) 
-		return false;
-
-	if(!s.start()) 
-		return false; 
-
-
-		
-	else 
+	while(true)
+	{
+		sleep(4);
+	std::cout<<"w\n";
+	simpleLock.lock();
+	for(int i: clients)
 	{
 
-		primary.send((std::to_string(port)).c_str());
-
+		write(i,"whatever data",strlen("whatever data"));
+	}
+	simpleLock.unlock();
 	}
 
-	
-		std::cerr<<"accepting connection"; 
-		if(s.acceptConnection())
-		{
-			s.send("redirection succeeded");
-			return true;
-		}
-		else
-		{
-			return false;
-			
-		}
-	
+
+
 }
+
 
 void collectClients()
 {
@@ -59,17 +51,17 @@ void collectClients()
 		
 		if(primary.acceptConnection())
 		{
-			if(redirectClient())
-			{
+			std::cout<<"client connected\n";
+			simpleLock.lock();
+			
+			clients.push_back(primary.incomingConnection);
+			simpleLock.unlock();
 
-			}
-			else
-			{
-			}
+
 		}
 		else
 		{
-				
+			std::cout<<"something went wrong while accepting connection \n"; 
 		}
 
 	}
@@ -79,10 +71,14 @@ int main( int argc, char** argv)
 {
 	primary.setup(atoi(argv[1]));
 	primary.start();
-	std::cerr<<"started";
+	std::cout<<"started\n";
 
 	std::thread one(collectClients);
+	std::thread two(broadcastMessage);
+	std::thread three(receiveMessages);
 	one.join();
+	two.join();
+	three.join();
 
 	
 	
