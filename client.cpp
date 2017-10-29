@@ -9,11 +9,10 @@ TcpClient tcp;
 void passMessages()
 {
 
-	//std::cin>>data; 
-	//write(tcp.descriptor,data.c_str(),strlen(data.c_str()));
-	for(;;){
-	write(tcp.descriptor,"x",strlen("x"));
-	sleep(2);
+	while(true)
+	{
+		std::cin>>data; 
+		tcp.send(data.c_str());
 	}
 
 }
@@ -25,7 +24,9 @@ void receiveMessages()
 
 		//std::cout<<"received :  "<<tcp.receive();
 		//
-		puts(tcp.receive());
+		//puts(tcp.receive());
+		if(tcp.receive())
+			puts(tcp.receivedData);
 	}
 }
 
@@ -35,9 +36,9 @@ int main(int argc,char** argv)
 
 	if (!tcp.connection()) return -1;
 
-	std::thread one(receiveMessages);
+	//std::thread one(receiveMessages);
+	//one.join();
 	std::thread two(passMessages);
-	one.join();
 	two.join();
 
 

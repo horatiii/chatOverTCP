@@ -14,12 +14,9 @@ class TcpServer
 		bool setup(uint16_t port);
 		bool start();
 		bool acceptConnection();
-		bool send(const char* data);
-		char* receive();
 
 	private:
 		struct sockaddr_in server , client;
-		char toReceive[1024]; 
 	  const int addrSize = sizeof(struct sockaddr_in);
 };
 
@@ -41,28 +38,7 @@ bool TcpServer::setup(uint16_t port)
 	{ 
 		return true;
 	}
-}
-
-
-char* TcpServer::receive()
-{
-	memset(toReceive, 0, sizeof(toReceive)); 
-	read(descriptor,toReceive,1024);
-	return toReceive;
-}
-
-bool TcpServer::send(const char* data)
-{
-	if( write(incomingConnection , data , strlen(data))>=0)
-		return true;
-
-	else
-	{
-		//std::cerr <<"sending:  "<< strerror(errno) << std::endl;
-		std::cerr<<"sending failed";
-		return false;
-	}
-}
+} 
 
 bool TcpServer::start()
 {

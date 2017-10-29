@@ -2,70 +2,40 @@
 #include <thread>
 #include <vector>
 #include <mutex>
+#include <queue>
 
 TcpServer primary;
-std::vector<int> clients;
-std::mutex simpleLock;
-char data[1024];
 
-void receiveMessages()
+//std::queue<std::string> globalQueue;
+std::vector<std::string> messagesVector;
+std::mutex messagesMutex;
+
+
+void broadcastMessages(int descriptor)
+{
+	unsigned currentMessagePosition=0;
+
+
+
+
+}
+
+
+void receiveMessages(int descriptor)
 {
 	while(true)
 	{
-	simpleLock.lock();
-		for(int i:clients)
-		{
-      read(i,data,1024);   
+		  char data[1024];
+      read(descriptor,data,1024);   
 			puts(data);
-		}
-		simpleLock.unlock();
+
+			messagesMutex.lock(); 
+			messagesVector.insert(messagesVector.begin(),std::string(data));
+			messagesMutex.unlock();
 	}
-}
+} 
 
 
-void broadcastMessage()
-{
-	while(true)
-	{
-		sleep(4);
-	std::cout<<"w\n";
-	simpleLock.lock();
-	for(int i: clients)
-	{
-
-		write(i,"whatever data",strlen("whatever data"));
-	}
-	simpleLock.unlock();
-	}
-
-
-
-}
-
-
-void collectClients()
-{
-	while(true)
-	{
-
-		
-		if(primary.acceptConnection())
-		{
-			std::cout<<"client connected\n";
-			simpleLock.lock();
-			
-			clients.push_back(primary.incomingConnection);
-			simpleLock.unlock();
-
-
-		}
-		else
-		{
-			std::cout<<"something went wrong while accepting connection \n"; 
-		}
-
-	}
-}
 
 int main( int argc, char** argv)
 {
@@ -73,12 +43,26 @@ int main( int argc, char** argv)
 	primary.start();
 	std::cout<<"started\n";
 
-	std::thread one(collectClients);
-	std::thread two(broadcastMessage);
-	std::thread three(receiveMessages);
-	one.join();
-	two.join();
-	three.join();
+	while(true)
+	{ 
+		
+		if(primary.acceptConnection())
+		{
+			std::cout<<"client connected\n";
+			std::thread two(receiveMessages,primary.incomingConnection);
+			two.detach();
+
+
+			
+			
+		}
+		else
+		{
+			std::cout<<"something went wrong while accepting connection \n"; 
+		}
+
+	}
+
 
 	
 	

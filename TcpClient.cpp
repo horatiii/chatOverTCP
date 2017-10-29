@@ -5,19 +5,21 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <string.h>
+
+
 class TcpClient
 {
 	public: 
 		int descriptor;
 		bool setup(const char* addr, uint16_t port);
 		bool connection();
-		bool send(char* data);
-		char* receive();
+		bool send(const char* data);
+		bool receive();
+		char receivedData[1024];
 
 
 	private:
 		struct sockaddr_in server;
-		char toReceive[1024];
 
 
 };
@@ -58,14 +60,17 @@ bool TcpClient::connection()
 	}
 }
 
-char* TcpClient::receive()
+bool TcpClient::receive()
 {
-  memset(toReceive, 0, sizeof(toReceive)); 
-	read(descriptor,toReceive,1024);
-	return toReceive;
+  memset(receivedData, 0, sizeof(receivedData)); 
+	if( read(descriptor,receivedData,1024)>0)
+	{
+		return true;
+	}
+	else return false;
 }
 
-bool TcpClient::send(char* data)
+bool TcpClient::send(const char* data)
 {
 	write(descriptor , data , strlen(data));
 	return true;
