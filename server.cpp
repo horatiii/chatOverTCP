@@ -2,36 +2,41 @@
 #include <thread>
 #include <vector>
 #include <mutex>
-#include <queue>
 
-TcpServer primary;
+TcpServer primary; 
+std::vector<int> clients;
 
-//std::queue<std::string> globalQueue;
-std::vector<std::string> messagesVector;
-std::mutex messagesMutex;
-
-
-void broadcastMessages(int descriptor)
+void sendMessage(int descriptor,const char* data)
 {
-	unsigned currentMessagePosition=0;
+	write(descriptor , data , strlen(data));
+}
 
 
 
-
+void broadcastMessages()
+{ 
+	for(int i: clients)
+	{
+		std::thread bm(sendMessage,i,"what ever");
+		bm.detach();
+	} 
 }
 
 
 void receiveMessages(int descriptor)
 {
+	char data[1024];
 	while(true)
 	{
-		  char data[1024];
-      read(descriptor,data,1024);   
-			puts(data);
+		memset(data, 0, sizeof(data)); 
+		read(descriptor,data,1024);   
+		puts(data);
+		//std::cout<<data;
 
-			messagesMutex.lock(); 
-			messagesVector.insert(messagesVector.begin(),std::string(data));
-			messagesMutex.unlock();
+		for(int i:clients)
+		{
+			sendMessage(i,std::string(data).c_str()); 
+		}
 	}
 } 
 
@@ -45,16 +50,17 @@ int main( int argc, char** argv)
 
 	while(true)
 	{ 
-		
+
 		if(primary.acceptConnection())
 		{
 			std::cout<<"client connected\n";
+			clients.push_back(primary.incomingConnection);
 			std::thread two(receiveMessages,primary.incomingConnection);
 			two.detach();
 
 
-			
-			
+
+
 		}
 		else
 		{
@@ -64,6 +70,6 @@ int main( int argc, char** argv)
 	}
 
 
-	
-	
+
+
 }

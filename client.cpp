@@ -21,6 +21,7 @@ void receiveMessages()
 { 
 	while(true) 
 	{
+		//puts("received");
 
 		//std::cout<<"received :  "<<tcp.receive();
 		//
@@ -36,10 +37,13 @@ int main(int argc,char** argv)
 
 	if (!tcp.connection()) return -1;
 
-	//std::thread one(receiveMessages);
-	//one.join();
 	std::thread two(passMessages);
-	two.join();
+	two.detach();
+	std::thread one(receiveMessages);
+	one.detach();
+
+
+	while(true);
 
 
 
