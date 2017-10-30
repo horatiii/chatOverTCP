@@ -66,7 +66,6 @@ bool TcpClient::receive()
 
 bool TcpClient::send(const char* data) //this could be smart string pointer
 {
-	const size_t len = sizeof(data);
-	write(descriptor , data , len);
+	write(descriptor , data , strlen(data));
 	return true;
 }
