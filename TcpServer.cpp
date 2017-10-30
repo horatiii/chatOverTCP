@@ -70,5 +70,3 @@ bool TcpServer::acceptConnection()
 		return false;
 	}
 }
-
-//int main(){}

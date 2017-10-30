@@ -2,10 +2,9 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <iostream>
-#include <cstdlib>
-#include <unistd.h>
-#include <string.h>
-
+#include <unistd.h> //read, write
+#include <string.h> //strerror
+#include <string> 
 
 class TcpClient
 {
@@ -19,9 +18,7 @@ class TcpClient
 
 
 	private:
-		struct sockaddr_in server;
-
-
+		struct sockaddr_in server; 
 };
 
 bool TcpClient::setup(const char *addr, uint16_t port)
@@ -36,19 +33,16 @@ bool TcpClient::setup(const char *addr, uint16_t port)
 		std::cerr <<"descriptor creation:  "<< strerror(errno) << std::endl;
 		return false;
 	}
+
 	else 
 	{
 		return true;
-	}
-
-
+	} 
 }
 
 bool TcpClient::connection()
-{
-
-	if (connect(descriptor , (struct sockaddr *)&server , sizeof(server)) < 0)
-
+{ 
+	if (connect(descriptor , (struct sockaddr *)&server , sizeof(server)) < 0) 
 	{
 		std::cerr <<"connection:  "<< strerror(errno) << std::endl;
 		return false;
@@ -70,8 +64,9 @@ bool TcpClient::receive()
 	else return false;
 }
 
-bool TcpClient::send(const char* data)
+bool TcpClient::send(const char* data) //this could be smart string pointer
 {
-	write(descriptor , data , strlen(data));
+	const size_t len = sizeof(data);
+	write(descriptor , data , len);
 	return true;
 }

@@ -1,53 +1,37 @@
 #include "TcpClient.cpp"
-#include <thread>
+#include <thread> 
 
-
-std::string data; 
+std::string dataToSend; 
 TcpClient tcp; 
 
-
 void passMessages()
-{
-
+{ 
 	while(true)
 	{
-		std::cin>>data; 
-		tcp.send(data.c_str());
-	}
-
+		getline(std::cin,dataToSend);
+		tcp.send(dataToSend.c_str());
+	} 
 }
 
 void receiveMessages()
 { 
 	while(true) 
 	{
-		//puts("received");
-
-		//std::cout<<"received :  "<<tcp.receive();
-		//
-		//puts(tcp.receive());
 		if(tcp.receive())
-			puts(tcp.receivedData);
+			puts(tcp.receivedData); 
 	}
 }
 
 int main(int argc,char** argv)
 {
 	if(!tcp.setup(argv[1],atoi(argv[2]))) return -1; 
-
 	if (!tcp.connection()) return -1;
 
-	std::thread two(passMessages);
-	two.detach();
-	std::thread one(receiveMessages);
+	std::thread one(passMessages);
 	one.detach();
+	std::thread two(receiveMessages);
+	two.detach(); 
 
-
-	while(true);
-
-
-
-
-
+	while(true); 
 
 }
