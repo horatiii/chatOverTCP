@@ -6,19 +6,19 @@ TcpClient tcp;
 
 void passMessages()
 { 
-	while(true)
+	while(getline(std::cin,dataToSend))
 	{
-		getline(std::cin,dataToSend);
+
 		tcp.send(dataToSend.c_str());
 	} 
+
 }
 
 void receiveMessages()
 { 
-	while(true) 
+	while(tcp.receive()) 
 	{
-		if(tcp.receive())
-			puts(tcp.receivedData); 
+		puts(tcp.receivedData); 
 	}
 }
 
@@ -29,9 +29,18 @@ int main(int argc,char** argv)
 
 	std::thread one(passMessages);
 	one.detach();
-	std::thread two(receiveMessages);
-	two.detach(); 
+	//std::thread two(receiveMessages);
+	//two.detach(); 
+	//
+	//thread is replaced with with while loop below
 
-	while(true); 
+	while(true) 
+	{
+		if(tcp.receive())
+			puts(tcp.receivedData); 
+	}
+
+
+
 
 }

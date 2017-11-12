@@ -2,13 +2,37 @@
 #include <thread>
 #include <vector>
 #include <mutex>
+#include <csignal>
 
 TcpServer primary; 
 std::vector<int> clients;
 
 void sendMessage(int descriptor,const char* data)
 {
-	write(descriptor , data , strlen(data));
+	/*this code may look difficult to read, just ignore this function content for now*/
+	signal(SIGPIPE, SIG_IGN);
+
+	int error = 0;
+	socklen_t len = sizeof (error);
+	int retval = getsockopt (descriptor, SOL_SOCKET, SO_ERROR, &error, &len);
+
+	//To test if the socket is up:
+
+	if (retval != 0) {
+		/* there was a problem getting the error code */
+		fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
+		//return;
+	}
+
+	if (error != 0) {
+		/* socket has a non zero error status */
+		fprintf(stderr, "socket error: %s\n", strerror(error));
+	}
+
+	else
+	{
+		write(descriptor , data , strlen(data));
+	}
 } 
 
 
@@ -17,14 +41,16 @@ void receiveMessages(int descriptor)
 	char data[1024];
 	while(true)
 	{
-		memset(data, 0, sizeof(data)); 
-		read(descriptor,data,1024);   
-		puts(data);
-
-		for(int i:clients)
+		memset(data, 0, strlen(data)); 
+		if(read(descriptor,data,1024)>0)   
 		{
-			std::thread bm(sendMessage,i,std::string(data).c_str());
-			bm.detach();
+			puts(data);
+
+			for(int i:clients)
+			{
+				std::thread bm(sendMessage,i,std::string(data).c_str());
+				bm.detach();
+			}
 		}
 	}
 } 
