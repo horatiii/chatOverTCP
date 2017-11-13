@@ -1,8 +1,8 @@
 #include "TcpServer.cpp" 
 #include <thread>
 #include <vector>
-#include <mutex>
 #include <csignal>
+#include <algorithm>
 
 TcpServer primary; 
 std::vector<int> clients;
@@ -27,6 +27,9 @@ void sendMessage(int descriptor,const char* data)
 	if (error != 0) {
 		/* socket has a non zero error status */
 		fprintf(stderr, "socket error: %s\n", strerror(error));
+		/*if connection was broken, it is recommended to remove particular descriptor*/
+		clients.erase(std::remove(clients.begin(), clients.end(), 8), clients.end());
+
 	}
 
 	else
@@ -48,8 +51,12 @@ void receiveMessages(int descriptor)
 
 			for(int i:clients)
 			{
-				std::thread bm(sendMessage,i,std::string(data).c_str());
-				bm.detach();
+				/*do not send message to a sender*/
+				if(descriptor!=i)
+				{
+					std::thread bm(sendMessage,i,std::string(data).c_str());
+					bm.detach();
+				}
 			}
 		}
 	}

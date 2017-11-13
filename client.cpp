@@ -6,7 +6,7 @@ TcpClient tcp;
 
 void passMessages()
 { 
-	while(getline(std::cin,dataToSend))
+	while(std::getline(std::cin,dataToSend))
 	{
 
 		tcp.send(dataToSend.c_str());
