@@ -28,7 +28,7 @@ void sendMessage(int descriptor,const char* data)
 		/* socket has a non zero error status */
 		fprintf(stderr, "socket error: %s\n", strerror(error));
 		/*if connection was broken, it is recommended to remove particular descriptor*/
-		clients.erase(std::remove(clients.begin(), clients.end(), 8), clients.end());
+		//clients.erase(std::remove(clients.begin(), clients.end(), 8), clients.end());
 
 	}
 
