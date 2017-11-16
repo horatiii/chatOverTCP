@@ -56,12 +56,18 @@ bool TcpClient::connection()
 
 bool TcpClient::receive()
 {
+	int readBytes;
   memset(receivedData, 0, sizeof(receivedData)); 
-	if( read(descriptor,receivedData,1024)>0)
+	if( (readBytes=read(descriptor,receivedData,1024))>0)
 	{
+		printf("%d bytes read  ",readBytes);
 		return true;
 	}
-	else return false;
+	else
+	{
+		perror("error while reading");
+		return false;
+	}
 }
 
 bool TcpClient::send(const char* data) //this could be smart string pointer

@@ -1,26 +1,27 @@
 #include "TcpClient.cpp"
 #include <thread> 
 
-std::string dataToSend; 
+std::string dataToSend;
 TcpClient tcp; 
 
 void passMessages()
 { 
-	while(std::getline(std::cin,dataToSend))
+	while(true)
 	{
+		//memset(dataToSend, 0, sizeof(dataToSend)); 
 
-		tcp.send(dataToSend.c_str());
+		//if(scanf("%s",dataToSend)>0) 
+		if(getline(std::cin,dataToSend))
+			tcp.send(dataToSend.c_str());
+		else
+		{
+			perror("server must have terminated");
+			return;
+		}
 	} 
 
-}
+} 
 
-void receiveMessages()
-{ 
-	while(tcp.receive()) 
-	{
-		puts(tcp.receivedData); 
-	}
-}
 
 int main(int argc,char** argv)
 {
@@ -29,18 +30,15 @@ int main(int argc,char** argv)
 
 	std::thread one(passMessages);
 	one.detach();
-	//std::thread two(receiveMessages);
-	//two.detach(); 
-	//
-	//thread is replaced with with while loop below
 
 	while(true) 
 	{
 		if(tcp.receive())
 			puts(tcp.receivedData); 
-	}
-
-
-
-
+		else
+		{
+			perror("server must have terminated");
+			return -1;
+		}
+	} 
 }

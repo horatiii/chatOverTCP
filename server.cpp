@@ -4,10 +4,16 @@
 #include <csignal>
 #include <algorithm>
 
+std::string getCurrentDate()
+{
+	return std::string(std::to_string(time(0)));
+}
+
+//FILE* file ; 
 TcpServer primary; 
 std::vector<int> clients;
 
-void sendMessage(int descriptor,const char* data)
+void sendMessage(int descriptor, char* data)
 {
 	/*this code may look difficult to read, just ignore this function content for now*/
 	signal(SIGPIPE, SIG_IGN);
@@ -27,14 +33,24 @@ void sendMessage(int descriptor,const char* data)
 	if (error != 0) {
 		/* socket has a non zero error status */
 		fprintf(stderr, "socket error: %s\n", strerror(error));
-		/*if connection was broken, it is recommended to remove particular descriptor*/
-		//clients.erase(std::remove(clients.begin(), clients.end(), 8), clients.end());
+
+		auto it = std::find(clients.begin(), clients.end(), descriptor);
+		if(it != clients.end())
+			clients.erase(it);
 
 	}
 
 	else
 	{
-		write(descriptor , data , strlen(data));
+		int writtenBytes;
+		if( (writtenBytes=write(descriptor , data , strlen(data)))>0)
+			printf("\t d: %d, %d bytes : %s \n",descriptor,writtenBytes,data);
+		else
+		{
+			perror("");
+			printf("f: \t \t %d : %s \n",descriptor,data);
+		}
+
 	}
 } 
 
@@ -44,21 +60,26 @@ void receiveMessages(int descriptor)
 	char data[1024];
 	while(true)
 	{
-		memset(data, 0, strlen(data)); 
+		memset(data, 0, sizeof(data)); 
 		if(read(descriptor,data,1024)>0)   
 		{
 			puts(data);
+
 
 			for(int i:clients)
 			{
 				/*do not send message to a sender*/
 				if(descriptor!=i)
 				{
-					std::thread bm(sendMessage,i,std::string(data).c_str());
+					char newData[1024];
+					strcpy(newData,data);
+					std::thread bm(sendMessage,i,newData);
 					bm.detach();
 				}
 			}
 		}
+		else
+			return;
 	}
 } 
 
@@ -66,8 +87,10 @@ void receiveMessages(int descriptor)
 
 int main( int argc, char** argv)
 {
-	primary.setup(atoi(argv[1]));
-	primary.start();
+	//if((file=fopen(getCurrentDate().c_str(),"w"))==NULL) return -1;
+	if(!primary.setup(atoi(argv[1]))) return -1;
+	if(!primary.start()) return -1;
+
 	std::cout<<"started\n";
 
 	while(true)
@@ -75,7 +98,7 @@ int main( int argc, char** argv)
 
 		if(primary.acceptConnection())
 		{
-			std::cout<<"client connected\n";
+			std::cout<<"client connected  "<<primary.incomingConnection<<std::endl;
 			clients.push_back(primary.incomingConnection);
 			std::thread two(receiveMessages, primary.incomingConnection);
 			two.detach(); 
