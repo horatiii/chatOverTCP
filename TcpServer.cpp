@@ -6,14 +6,15 @@
 #include <unistd.h>
 #include <string>
 #include <string.h>
+#define MAX_CONN_QUANTITY 3
 
 class TcpServer
 {
 	public: 
-		int descriptor, incomingConnection; 
+		int hostDescriptor; 
 		bool setup(uint16_t port);
 		bool start();
-		bool acceptConnection();
+		int acceptConnection();
 
 	private:
 		struct sockaddr_in server , client;
@@ -26,47 +27,48 @@ bool TcpServer::setup(uint16_t port)
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = INADDR_ANY;
 	server.sin_port = htons( port );
-	descriptor = socket(AF_INET , SOCK_STREAM , 0); 
+	hostDescriptor = socket(AF_INET , SOCK_STREAM , 0); 
 
-	if (descriptor < 0)
+
+	/*may appropriate descriptor equal zero ?*/
+	if (hostDescriptor >= 0)
 	{
-		std::cerr <<"descriptor creation:  "<< strerror(errno) << std::endl;
-		return false;
+		return true;
 	}
 
 	else
 	{ 
-		return true;
+		std::cerr <<"descriptor creation:  "<< strerror(errno) << std::endl;
+		return false;
 	}
 } 
 
 bool TcpServer::start()
 {
 
-	if( bind(descriptor,(struct sockaddr *)&server , sizeof(server)) < 0)
+	if( bind(hostDescriptor,(struct sockaddr *)&server , sizeof(server)) == 0)
 	{
-		std::cerr <<"bind failed :  "<< strerror(errno) << std::endl;
-		return false;
+		listen(hostDescriptor , MAX_CONN_QUANTITY); 
+		return true;
 	}
 
 	else
 	{ 
-		listen(descriptor , 3); 
-		return true;
+		std::cerr <<"bind failed :  "<< strerror(errno) << std::endl;
+		return false;
 	}
 }
 
-bool TcpServer::acceptConnection()
+int TcpServer::acceptConnection()
 { 
-	incomingConnection = accept(descriptor, (struct sockaddr *)&client, (socklen_t*)&addrSize); 
-	if(incomingConnection)
-	{
-		return true;
-	}
+	int temporary =accept(hostDescriptor, (struct sockaddr *)&client, (socklen_t*)&addrSize);
 
-	else
+	/*still, can appropriate descriptor equal zero ?*/
+	if(temporary<0)
 	{
 		std::cerr <<"connection:  "<< strerror(errno) << std::endl;
-		return false;
 	}
+
+	return temporary;
+
 }

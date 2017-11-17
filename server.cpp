@@ -3,13 +3,18 @@
 #include <vector>
 #include <csignal>
 #include <algorithm>
+//FILE* file ; 
 
 std::string getCurrentDate()
 {
 	return std::string(std::to_string(time(0)));
 }
 
-//FILE* file ; 
+//void sigPipeHandler(int signum,int descriptor)
+//{
+	////std::cout<<
+//}
+
 TcpServer primary; 
 std::vector<int> clients;
 
@@ -17,24 +22,27 @@ void sendMessage(int descriptor, char* data)
 {
 	/*this code may look difficult to read, just ignore this function content for now*/
 	signal(SIGPIPE, SIG_IGN);
+	//std::signal(SIGPIPE,sigPipeHandler);
 
-	int error = 0;
-	socklen_t len = sizeof (error);
-	int retval = getsockopt (descriptor, SOL_SOCKET, SO_ERROR, &error, &len);
+	int errorCode = 0;
+	socklen_t len = sizeof (errorCode);
+	int retval = getsockopt (descriptor, SOL_SOCKET, SO_ERROR, &errorCode, &len);
 
 	//To test if the socket is up:
 
 	if (retval != 0) {
 		/* there was a problem getting the error code */
-		fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
+		std::cerr <<"error while getting socket error code: "<< strerror(retval) << std::endl;
+		
 		//return;
 	}
 
-	if (error != 0) {
+	if (errorCode != 0) {
 		/* socket has a non zero error status */
-		fprintf(stderr, "socket error: %s\n", strerror(error));
+		std::cerr <<"socket error:  "<< strerror(errorCode) << std::endl;
 
-		auto it = std::find(clients.begin(), clients.end(), descriptor);
+
+		std::vector<int>::iterator it = std::find(clients.begin(), clients.end(), descriptor);
 		if(it != clients.end())
 			clients.erase(it);
 
@@ -47,8 +55,8 @@ void sendMessage(int descriptor, char* data)
 			printf("\t d: %d, %d bytes : %s \n",descriptor,writtenBytes,data);
 		else
 		{
-			perror("");
-			printf("f: \t \t %d : %s \n",descriptor,data);
+			std::cerr <<"failed to send.  "<<descriptor<<data<< strerror(errno) << std::endl;
+			//printf("failed to send to descriptror: \t \t %d : %s \n",descriptor,data);
 		}
 
 	}
@@ -95,12 +103,13 @@ int main( int argc, char** argv)
 
 	while(true)
 	{ 
+		int incomingConnection=primary.acceptConnection();
 
-		if(primary.acceptConnection())
+		if(incomingConnection>=0)
 		{
-			std::cout<<"client connected  "<<primary.incomingConnection<<std::endl;
-			clients.push_back(primary.incomingConnection);
-			std::thread two(receiveMessages, primary.incomingConnection);
+			std::cout<<"client connected  "<<incomingConnection<<std::endl;
+			clients.push_back(incomingConnection);
+			std::thread two(receiveMessages, incomingConnection);
 			two.detach(); 
 		}
 		else
@@ -108,9 +117,5 @@ int main( int argc, char** argv)
 			std::cout<<"something went wrong while accepting connection \n"; 
 		}
 
-	}
-
-
-
-
+	} 
 }
