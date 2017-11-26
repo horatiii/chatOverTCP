@@ -1,7 +1,0 @@
-1. Create two windows inside terminal with Ncurses.
-
-2. Nick <-> Descriptor identification.
-
-3. Build Log file engine for server.
-
-4. Implement messages coloring. How ? Dunno yet.
