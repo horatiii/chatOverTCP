@@ -100,6 +100,7 @@ int main( int argc, char** argv)
 	if(!primary.start()) return -1;
 
 	std::cout<<"started\n";
+	char welcomeMessage[1024]="Welcome to Superior Chat\0";
 
 	while(true)
 	{ 
@@ -109,6 +110,7 @@ int main( int argc, char** argv)
 		{
 			std::cout<<"client connected  "<<incomingConnection<<std::endl;
 			clients.push_back(incomingConnection);
+			sendMessage(incomingConnection,welcomeMessage);
 			std::thread two(receiveMessages, incomingConnection);
 			two.detach(); 
 		}
