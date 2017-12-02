@@ -29,13 +29,10 @@ bool TcpServer::setup(uint16_t port)
 	server.sin_port = htons( port );
 	hostDescriptor = socket(AF_INET , SOCK_STREAM , 0); 
 
-
-	/*may appropriate descriptor equal zero ?*/
 	if (hostDescriptor >= 0)
 	{
 		return true;
-	}
-
+	} 
 	else
 	{ 
 		std::cerr <<"descriptor creation:  "<< strerror(errno) << std::endl;
@@ -44,14 +41,19 @@ bool TcpServer::setup(uint16_t port)
 } 
 
 bool TcpServer::start()
-{
-
+{ 
 	if( bind(hostDescriptor,(struct sockaddr *)&server , sizeof(server)) == 0)
 	{
-		listen(hostDescriptor , MAX_CONN_QUANTITY); 
-		return true;
-	}
-
+		if(listen(hostDescriptor , MAX_CONN_QUANTITY)==0)
+		{
+			return true;
+		}
+		else
+		{
+			std::cerr <<"listen failed:	"<< strerror(errno) << std::endl;
+			return false;
+		} 
+	} 
 	else
 	{ 
 		std::cerr <<"bind failed :  "<< strerror(errno) << std::endl;
@@ -61,14 +63,10 @@ bool TcpServer::start()
 
 int TcpServer::acceptConnection()
 { 
-	int temporary =accept(hostDescriptor, (struct sockaddr *)&client, (socklen_t*)&addrSize);
-
-	/*still, can appropriate descriptor equal zero ?*/
+	int temporary =accept(hostDescriptor, (struct sockaddr *)&client, (socklen_t*)&addrSize); 
 	if(temporary<0)
 	{
-		std::cerr <<"connection:  "<< strerror(errno) << std::endl;
-	}
-
-	return temporary;
-
+		std::cerr <<"connection error:  "<< strerror(errno) << std::endl;
+	} 
+	return temporary; 
 }

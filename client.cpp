@@ -3,9 +3,9 @@
 #include <thread> 
 #define BEG_X 30
 #define BEG_Y 1
+#define HEIGHT 10
+#define WIDTH 30
 
-
-//std::string dataToSend;
 TcpClient tcp; 
 
 void passMessages()
@@ -15,40 +15,33 @@ void passMessages()
 	{
 		memset(x, 0, sizeof(x)); 
 
-		//if(scanf("%s",dataToSend)>0) 
-		//if(getline(std::cin,dataToSend))
-		//tcp.send(dataToSend.c_str());
-		if(getstr(x)>=0)
+		if(getstr(x)==0)
 		{
-			tcp.send(x);
+			if(x[0]!='\0')
+			{
+				if(!tcp.send(x))
+				{
+					std::cerr <<"server must have terminated:  "<< strerror(errno) << std::endl;
+				} 
+			}
 		}
 		else
 		{
-			perror("server must have terminated");
-			return;
+			//getting from stdin failed	
 		}
 	} 
-
 } 
-
 
 int main(int argc,char** argv)
 {
 	if(!tcp.setup(argv[1],atoi(argv[2]))) return -1; 
 	if (!tcp.connection()) return -1;
-	newterm(NULL,stdout,stderr);
-	//initscr();
-	WINDOW* mw = newwin(25,50,BEG_Y,BEG_X);
-	//WINDOW* myBox = newwin(5,5,BEG_Y,BEG_X);
-	//box(myBox,0,0);
-	//wrefresh(myBox);
-	
-	mvwprintw(mw, 1,1,"hello on chat!\n");
+
+	//newterm(NULL,stdout,stderr);
+	initscr();
+	WINDOW* mw = newwin(HEIGHT,WIDTH,BEG_Y,BEG_X);
 	wrefresh(mw);
-	box(mw, 0, 0);  // added for easy viewing
-	scrollok(mw, TRUE);
-
-
+	scrollok(mw, TRUE); 
 
 	std::thread one(passMessages);
 	one.detach();
@@ -57,18 +50,14 @@ int main(int argc,char** argv)
 	{
 		if(tcp.receive())
 		{
-			//box(myBox,0,0);
-			//mvwprintw(mw, 1,1,tcp.receivedData);
 			waddstr(mw,tcp.receivedData);
-			//box(mw, 0, 0);  // added for easy viewing
 			waddstr(mw,"\n");
 
 			wrefresh(mw);
-			//wrefresh(myBox);
 		}
 		else
 		{
-			perror("server must have terminated");
+			std::cerr <<"server must have terminated:  "<< strerror(errno) << std::endl;
 			return -1;
 		}
 	} 
