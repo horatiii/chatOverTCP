@@ -6,7 +6,7 @@
 
 TcpServer primary; 
 std::vector<int> clients;
-char welcomeMessage[1024]="Welcome to Superior Chat\0";
+char welcomeMessage[1024]="Welcome to Superior Chat";
 
 void sendMessage(int descriptor, char* data)
 {
@@ -21,7 +21,7 @@ void sendMessage(int descriptor, char* data)
 		std::cerr <<"error while getting socket error code: "<< strerror(retval) << std::endl; 
 	} 
 
-	if (errorCode != 0) 
+	if (errorCode != 0)
 	{
 		std::cerr <<"socket error:  "<< strerror(errorCode) << std::endl; 
 		std::vector<int>::iterator it = std::find(clients.begin(), clients.end(), descriptor);
@@ -32,10 +32,10 @@ void sendMessage(int descriptor, char* data)
 	}
 	else
 	{
-		int writtenBytes;
+		std::size_t writtenBytes;
 		if( (writtenBytes=write(descriptor , data , strlen(data)))>0)
 		{
-			printf("\t d: %d, %d bytes : %s \n",descriptor,writtenBytes,data);
+			printf("\t d: %d, %lu bytes : %s \n",descriptor,writtenBytes,data);
 		}
 		else
 		{
@@ -86,11 +86,14 @@ int main( int argc, char** argv)
 			std::cout<<"client connected  "<<incomingConnection<<std::endl;
 			clients.push_back(incomingConnection);
 
-			std::thread welcome(sendMessage,incomingConnection,welcomeMessage);
-			welcome.detach();
 
 			std::thread two(receiveMessages, incomingConnection);
 			two.detach(); 
+
+			usleep(10000);
+
+			std::thread welcome(sendMessage,incomingConnection,welcomeMessage);
+			welcome.detach();
 		}
 		else
 		{
