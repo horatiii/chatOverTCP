@@ -4,20 +4,20 @@
 #include <iostream>
 #include <unistd.h> //read, write
 #include <string.h> //strerror
-#include <string> 
+#include <string>
 
 class TcpClient
 {
-	public: 
+	public:
 		int descriptor;
 		bool setup(const char* addr, uint16_t port);
 		bool connection();
 		bool send(const char* data);
 		bool receive();
-		char receivedData[1024]; 
+		char receivedData[1024];
 
 	private:
-		struct sockaddr_in server; 
+		struct sockaddr_in server;
 };
 
 bool TcpClient::setup(const char *addr, uint16_t port)
@@ -30,20 +30,20 @@ bool TcpClient::setup(const char *addr, uint16_t port)
 	if(descriptor>=0)
 	{
 		return true;
-	} 
-	else 
+	}
+	else
 	{
 		std::cerr <<"descriptor creation:  "<< strerror(errno) << std::endl;
 		return false;
-	} 
+	}
 }
 
 bool TcpClient::connection()
-{ 
-	if (connect(descriptor , (struct sockaddr *)&server , sizeof(server)) == 0) 
+{
+	if (connect(descriptor , (struct sockaddr *)&server , sizeof(server)) == 0)
 	{
 		return true;
-	} 
+	}
 	else
 	{
 		std::cerr <<"connection:  "<< strerror(errno) << std::endl;
@@ -54,7 +54,7 @@ bool TcpClient::connection()
 bool TcpClient::receive()
 {
 	int readBytes;
-  memset(receivedData, 0, sizeof(receivedData)); 
+	memset(receivedData, 0, sizeof(receivedData));
 	if( (readBytes=read(descriptor,receivedData,1024))>0)
 	{
 		return true;
@@ -66,7 +66,7 @@ bool TcpClient::receive()
 	}
 }
 
-bool TcpClient::send(const char* data) 
+bool TcpClient::send(const char* data)
 {
 	if( write(descriptor , data , strlen(data))>0)
 	{

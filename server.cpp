@@ -1,10 +1,10 @@
-#include "TcpServer.cpp" 
+#include "TcpServer.cpp"
 #include <thread>
 #include <vector>
 #include <csignal>
 #include <algorithm>
 
-TcpServer primary; 
+TcpServer primary;
 std::vector<int> clients;
 char welcomeMessage[1024]="Welcome to Superior Chat";
 
@@ -16,18 +16,18 @@ void sendMessage(int descriptor, char* data)
 	socklen_t len = sizeof (errorCode);
 	int retval = getsockopt (descriptor, SOL_SOCKET, SO_ERROR, &errorCode, &len);
 
-	if (retval != 0) 
+	if (retval != 0)
 	{
-		std::cerr <<"error while getting socket error code: "<< strerror(retval) << std::endl; 
-	} 
+		std::cerr <<"error while getting socket error code: "<< strerror(retval) << std::endl;
+	}
 
 	if (errorCode != 0)
 	{
-		std::cerr <<"socket error:  "<< strerror(errorCode) << std::endl; 
+		std::cerr <<"socket error:  "<< strerror(errorCode) << std::endl;
 		std::vector<int>::iterator it = std::find(clients.begin(), clients.end(), descriptor);
 		if(it != clients.end())
 		{
-			clients.erase(it); 
+			clients.erase(it);
 		}
 	}
 	else
@@ -40,19 +40,19 @@ void sendMessage(int descriptor, char* data)
 		else
 		{
 			std::cerr <<"failed to send.  "<<descriptor<<data<< strerror(errno) << std::endl;
-		} 
+		}
 	}
-} 
+}
 
 void receiveMessages(int descriptor)
 {
 	char data[1024];
 	while(true)
 	{
-		memset(data, 0, sizeof(data)); 
-		if(read(descriptor,data,1024)>0)   
+		memset(data, 0, sizeof(data));
+		if(read(descriptor,data,1024)>0)
 		{
-			puts(data); 
+			puts(data);
 			for(int i:clients)
 			{
 				/*do not send message to a sender*/
@@ -68,7 +68,7 @@ void receiveMessages(int descriptor)
 		else
 			return;
 	}
-} 
+}
 
 int main( int argc, char** argv)
 {
@@ -78,7 +78,7 @@ int main( int argc, char** argv)
 	std::cout<<"started\n";
 
 	while(true)
-	{ 
+	{
 		int incomingConnection=primary.acceptConnection();
 
 		if(incomingConnection>=0)
@@ -98,6 +98,6 @@ int main( int argc, char** argv)
 		else
 		{
 			std::cerr <<"error while accepting connection:  "<< strerror(errno) << std::endl;
-		} 
-	} 
+		}
+	}
 }
